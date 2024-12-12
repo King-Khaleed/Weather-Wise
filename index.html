@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Climate Impact Tracker</title>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="output.css">
+  <style>
+    body {
+      background: linear-gradient(to bottom, #2c3e50, #3498db);
+      font-family: 'Arial', sans-serif;
+      color: white;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+  <div class="w-full max-w-md bg-white text-black p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-center mb-4">Climate Impact Tracker</h1>
+
+    <div class="mb-4">
+      <input type="text" id="city-input" placeholder="Enter city" class="border px-2 py-2 rounded w-full">
+    </div>
+
+    <button onclick="getWeatherByCity()" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 w-full rounded">Search</button>
+
+    <div id="weather-result" class="mt-6">
+      <!-- Weather results will be displayed here -->
+    </div>
+
+    <div id="error-message" class="text-red-500 mt-4 hidden">
+      <!-- Error messages will be displayed here -->
+    </div>
+  </div>
+
+  <section class="w-full max-w-4xl bg-white text-black p-6 rounded-lg shadow-lg mt-8">
+    <h2 class="text-xl font-bold mb-4">Climate Awareness</h2>
+    <p>Climate change affects ecosystems and livelihoods around the globe. Reduce your carbon footprint by: </p>
+      <ul class="list-disc ml-6 mt-2">
+        <li>Using renewable energy sources.</li>
+        <li>Reducing, reusing, and recycling materials.</li>
+        <li>Using public transportation or carpooling.</li>
+        <li>Supporting reforestation projects.</li>
+      </ul>
+    
+  </section>
+
+  <script>
+    const apiKey = "582298ab7ab9be24e8870ad89dfc9dab"; // Replace with your OpenWeather API Key
+
+    async function getWeatherByCity() {
+      const cityInput = document.getElementById('city-input');
+      const city = cityInput.value.trim();
+      const weatherResult = document.getElementById('weather-result');
+      const errorMessage = document.getElementById('error-message');
+
+      if (!city) {
+        errorMessage.textContent = "Please enter a city name.";
+        errorMessage.classList.remove('hidden');
+        return;
+      }
+
+      errorMessage.classList.add('hidden');
+      weatherResult.innerHTML = "<p>Loading...</p>";
+
+      try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+        if (!response.ok) {
+          throw new Error("City not found");
+        }
+
+        const data = await response.json();
+        const { name, weather, main, wind, sys } = data;
+        const weatherIcon = `http://openweathermap.org/img/wn/${weather[0].icon}.png`;
+        const sunrise = new Date(sys.sunrise * 1000).toLocaleTimeString();
+        const sunset = new Date(sys.sunset * 1000).toLocaleTimeString();
+
+        weatherResult.innerHTML = `
+          <div class="flex flex-col items-center">
+            <h2 class="text-xl font-bold mb-2">${name}</h2>
+            <img src="${weatherIcon}" alt="Weather icon" class="mb-2">
+            <p class="text-lg">${weather[0].description}</p>
+            <p class="text-lg">Temperature: ${main.temp}&deg;C</p>
+            <p class="text-lg">Wind Speed: ${wind.speed} m/s</p>
+            <p class="text-lg">Pressure: ${main.pressure} hPa</p>
+            <p class="text-lg">Sunrise: ${sunrise}</p>
+            <p class="text-lg">Sunset: ${sunset}</p>
+          </div>
+        `;
+      } catch (error) {
+        weatherResult.innerHTML = "";
+        errorMessage.textContent = error.message;
+        errorMessage.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
